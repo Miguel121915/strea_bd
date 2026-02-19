@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardstyle Hub - La Pensión</title>
+
+<style>
+/* Diseño Liviano y Estética Rojo/Negro */
+:root {
+    --red: #ff0000;
+    --bg: #000000;
+    --bg2: #0a0a0a;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body{
+    background: var(--bg);
+    color: #eee;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.header{
+    text-align:center;
+    padding:15px;
+    background:#000;
+    border-bottom:2px solid var(--red);
+    font-weight:bold;
+    font-size: 20px;
+    color: var(--red);
+    letter-spacing: 2px;
+}
+
+.contenedor{
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    height: calc(100vh - 55px);
+}
+
+/* PLAYLIST */
+.seccion-playlist {
+    background: var(--bg2);
+    border-right: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.playlist-header {
+    padding: 12px;
+    background: #000;
+    font-size: 11px;
+    color: var(--red);
+    border-bottom: 1px solid #222;
+    text-transform: uppercase;
+}
+
+.playlist-lista {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.playlist-item {
+    display: flex;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #111;
+    transition: 0.2s;
+}
+.playlist-item:hover { background: #1a1a1a; }
+.playlist-item.activo { border-left: 4px solid var(--red); background: #111; }
+
+.playlist-thumb {
+    width: 90px;
+    aspect-ratio: 16/9;
+    border-radius: 2px;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+.item-info { padding-left: 10px; flex: 1; overflow: hidden; }
+.item-titulo { font-size: 11px; color: #bbb; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.playlist-item.activo .item-titulo { color: var(--red); font-weight: bold; }
+
+/* VIDEO */
+.seccion-video{
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.titulo-video{
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--red);
+    text-align: center;
+}
+
+.video-principal{
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--red);
+    background: #000;
+}
+.video-principal iframe{ width: 100%; height: 100%; border: none; }
+
+/* REGISTRO SIMPLIFICADO */
+.seccion-registro{
+    background: var(--bg2);
+    padding: 20px;
+    border-left: 1px solid #222;
+    overflow-y: auto;
+}
+
+.seccion-registro h2{
+    text-align: center;
+    color: var(--red);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+input{
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    background: #000;
+    border: 1px solid #333;
+    color: var(--red);
+    border-radius: 4px;
+    outline: none;
+}
+
+button{
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--red);
+    color: var(--red);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+button:hover { background: var(--red); color: #fff; }
+
+.barra-container{ display: none; margin-top: 15px; text-align: center; }
+progress{ width: 100%; height: 8px; accent-color: var(--red); }
+
+.tarjeta{
+    background: #111;
+    padding: 10px;
+    margin-top: 10px;
+    border-left: 3px solid var(--red);
+    font-size: 12px;
+}
+
+@media(max-width:960px){
+    .contenedor { grid-template-columns: 1fr; height: auto; overflow: auto; }
+    body { overflow: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">LA PENSIÓN — HARDSTYLE</div>
+
+<div class="contenedor">
+    <div class="seccion-playlist">
+        <div class="playlist-header">Episodios / Sets</div>
+        <div class="playlist-lista" id="playlistLista"></div>
+    </div>
+
+    <div class="seccion-video">
+        <div class="titulo-video" id="tituloVideo">Cargando...</div>
+        <div class="video-principal">
+            <iframe id="videoFrame" src="" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="seccion-registro">
+        <h2>REGISTRO</h2>
+        <input type="text" id="nombre" placeholder="Nombre completo">
+        <input type="date" id="fechaNac">
+        <input type="number" id="numero" placeholder="Número de teléfono">
+        
+        <button onclick="registrarUsuario()">REGISTRAR</button>
+        
+        <div class="barra-container" id="barraBox">
+            <p style="font-size: 10px; color: var(--red); margin-bottom: 5px;">Guardando perfil...</p>
+            <progress id="barra" value="0" max="100"></progress>
+        </div>
+        <div id="resultado"></div>
+    </div>
+</div>
+
+<script>
+// Videos de Hardstyle que permiten reproducción externa
+const videos = [
+    { id: 'kDlTSynqMTs', titulo: 'Defqon.1 2024 | Official Aftermovie' },
+    { id: '5NHgoRQDUH0', titulo: 'Defqon.1 2025 | The Endshow' },
+    { id: 'fN1Gw8PHkAI', titulo: 'Defqon.1 2013 | Endshow Saturday' },
+    { id: 'DpxyDPzQZ7E', titulo: 'Defqon.1 2018 | Official Saturday Endshow' },
+    { id: 'ajTMOR7Ke_I', titulo: 'Defqon.1 2023 | Aftermovie: Path of the Warrior' }
+];
+
+let videoActivo = 0;
+
+function renderPlaylist(){
+    const lista = document.getElementById('playlistLista');
+    lista.innerHTML = '';
+    videos.forEach((v, i) => {
+        const item = document.createElement('div');
+        item.className = 'playlist-item' + (i === videoActivo ? ' activo' : '');
+        item.innerHTML = `
+            <img class="playlist-thumb" src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg">
+            <div class="item-info">
+                <div class="item-titulo">${v.titulo}</div>
+            </div>`;
+        item.onclick = () => cambiarVideo(i);
+        lista.appendChild(item);
+    });
+}
+
+function cambiarVideo(index){
+    videoActivo = index;
+    const v = videos[index];
+    document.getElementById('videoFrame').src = 'https://www.youtube.com/embed/' + v.id + '?autoplay=1';
+    document.getElementById('tituloVideo').innerText = v.titulo;
+    renderPlaylist();
+}
+
+function registrarUsuario(){
+    const nombre = document.getElementById('nombre').value;
+    const fecha = document.getElementById('fechaNac').value;
+    const numero = document.getElementById('numero').value;
+
+    if(!nombre || !fecha || !numero){ alert('Por favor, llena todos los campos'); return; }
+
+    const barraBox = document.getElementById('barraBox');
+    const barra = document.getElementById('barra');
+    barraBox.style.display = 'block';
+    
+    let progreso = 0;
+    const intervalo = setInterval(() => {
+        progreso += 5;
+        barra.value = progreso;
+        if(progreso >= 100){
+            clearInterval(intervalo);
+            barraBox.style.display = 'none';
+            const u = { nombre, fecha, numero };
+            guardarUsuario(u);
+            mostrarUsuario(u);
+            limpiarFormulario();
+        }
+    }, 30);
+}
+
+function guardarUsuario(u){
+    const arr = JSON.parse(localStorage.getItem('usuarios_pension')) || [];
+    arr.push(u);
+    localStorage.setItem('usuarios_pension', JSON.stringify(arr));
+}
+
+function mostrarUsuario(u){
+    const res = document.getElementById('resultado');
+    const t = document.createElement('div');
+    t.className = 'tarjeta';
+    t.innerHTML = `<b>NUEVO PERFIL</b><br>Nombre: ${u.nombre}<br>F. Nacimiento: ${u.fecha}<br>Tel: ${u.numero}`;
+    res.prepend(t);
+}
+
+function limpiarFormulario(){
+    ['nombre','fechaNac','numero'].forEach(id => document.getElementById(id).value = '');
+}
+
+window.onload = () => {
+    cambiarVideo(0);
+    const u = JSON.parse(localStorage.getItem('usuarios_pension')) || [];
+    u.forEach(user => mostrarUsuario(user));
+};
+</script>
+
+</body>
+</html>
